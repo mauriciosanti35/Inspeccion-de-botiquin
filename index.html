@@ -4,19 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro Inspección Mensual - ACCESS (Nube Centralizada)</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Librería para generar Excel -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
-    <!-- SDK de Firebase para conexión en tiempo real -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body class="bg-gray-100 py-6 px-4">
  
     <div class="max-w-5xl mx-auto bg-white p-6 rounded shadow-lg border border-gray-300">
-        <!-- Encabezado corporativo -->
         <div class="flex justify-between items-center border-b-2 border-black pb-4 mb-6">
             <div class="w-2/3">
                 <h1 class="text-lg font-bold uppercase text-gray-800 tracking-tight">REGISTRO DE INSPECCIÓN MENSUAL AL SISTEMA DE SEGURIDAD OPERACIONAL</h1>
@@ -27,11 +23,10 @@
             </div>
         </div>
 
-        <!-- Bloque de Control e Identificación -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 bg-gray-50 p-4 border border-gray-200 rounded">
             <div class="flex flex-col">
                 <label class="text-xs font-bold uppercase text-gray-500">Supervisor Responsable:</label>
-                <select id="inspector" onchange="autoAsignarArea()" class="border-b-2 border-blue-900 p-1 bg-transparent font-bold text-blue-900 focus:outline-none">
+                <select id="inspector" class="border-b-2 border-blue-900 p-1 bg-transparent font-bold text-blue-900 focus:outline-none">
                     <option value="" disabled selected>Seleccione su nombre...</option>
                     <option value="Mauricio Santibañez">Mauricio Santibañez</option>
                     <option value="Karen Cañete">Karen Cañete</option>
@@ -73,12 +68,10 @@
             </div>
         </div>
 
-        <!-- Indicador de Estado de Sincronización -->
         <div id="statusNube" class="mb-4 text-xs font-bold text-amber-600 bg-amber-50 border border-amber-200 p-2 rounded text-center uppercase">
             🔄 Conectando con la base de datos central de ACCESS...
         </div>
  
-        <!-- Tabla de Inspección Activa -->
         <div class="overflow-x-auto text-[11px] pt-2">
             <table class="w-full border-collapse border-2 border-black">
                 <thead class="bg-blue-900 text-white uppercase">
@@ -90,12 +83,10 @@
                     </tr>
                 </thead>
                 <tbody id="tablaInsumosActivos" class="text-gray-800">
-                    <!-- Dinámico -->
-                </tbody>
+                    </tbody>
             </table>
         </div>
  
-        <!-- Panel de Acciones Sincronizadas -->
         <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
             <button type="button" onclick="guardarAreaEnNube()" class="bg-blue-900 text-white font-bold py-4 rounded hover:bg-blue-800 transition tracking-[0.1em] uppercase shadow-lg text-sm">
                 💾 Guardar Solo Mi Área en la Nube
@@ -116,23 +107,6 @@
             storageBucket: "tu-proyecto.appspot.com",
             messagingSenderId: "123456789",
             appId: "1:123456:web:abcd"
-        };
-        
-        // Relación Supervisor -> Área por defecto
-        const mapeoAreas = {
-            "Mauricio Santibañez": "MANTENIMIENTO",
-            "Karen Cañete": "GERENCIA",
-            "Victor Vasquez": "BOVEDA",
-            "Erik Vasquez": "CONVERSION SERVICE",
-            "Leticia Lopez": "TI",
-            "Fremir Pagua": "BPO SANTANDER",
-            "Francisco Castillo": "BPO CHILE",
-            "Igley Perez": "PICKING",
-            "Gerardo Pinto": "BUSQUEDA",
-            "Aaron Ibaca": "INDEXACION",
-            "Carolina Navarro": "PRODUCCION",
-            "Catalina Duarte": "INGRESOS",
-            "Camila Carvajal": "TRANSPORTE"
         };
 
         let db = null;
@@ -185,15 +159,6 @@
                 });
                 memoriaLocal[area]["supervisor"] = "No inspeccionado aún";
             });
-        }
-
-        function autoAsignarArea() {
-            const supervisorSeleccionado = document.getElementById("inspector").value;
-            const areaAsignada = mapeoAreas[supervisorSeleccionado];
-            if(areaAsignada) {
-                document.getElementById("areaSeleccionada").value = areaAsignada;
-                cambiarFechaOArea();
-            }
         }
 
         function cargarDatosDeLaNube() {
