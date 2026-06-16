@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro Inspección Mensual - ACCESS (Consolidado Botiquines)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body class="bg-gray-100 py-6 px-4">
+ 
+    <div class="max-w-5xl mx-auto bg-white p-6 rounded shadow-lg border border-gray-300">
+        <div class="flex justify-between items-center border-b-2 border-black pb-4 mb-6">
+            <div class="w-2/3">
+                <h1 class="text-lg font-bold uppercase text-gray-800 tracking-tight">REGISTRO DE INSPECCIÓN MENSUAL AL SISTEMA DE SEGURIDAD OPERACIONAL</h1>
+                <p class="text-sm font-semibold text-blue-900 mt-1 uppercase">Consolidado General de Botiquines por Áreas - ACCESS</p>
+            </div>
+            <div class="w-1/3 flex justify-end items-center">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRF48GAfBiNyZh2fPJF-l8q0Dk1Dqn5tQ2r4g&s" alt="Logo ACCESS" class="h-16 object-contain">
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 bg-gray-50 p-4 border border-gray-200 rounded">
+            <div class="flex flex-col">
+                <label class="text-xs font-bold uppercase text-gray-500">Supervisor Responsable:</label>
+                <select id="inspector" class="border-b-2 border-blue-900 p-1 bg-transparent font-bold text-blue-900 focus:outline-none">
+                    <option value="Mauricio Santibañez">Mauricio Santibañez</option>
+                    <option value="Karen Cañete">Karen Cañete</option>
+                </select>
+            </div>
+            <div class="flex flex-col">
+                <label class="text-xs font-bold uppercase text-gray-500">Fecha de inspección:</label>
+                <input type="date" id="fecha" class="border-b-2 border-blue-900 p-1 bg-transparent font-bold focus:outline-none">
+            </div>
+            <div class="flex flex-col">
+                <label class="text-xs font-bold uppercase text-gray-600 bg-blue-100 px-2 py-0.5 rounded self-start mb-1">Área en Evaluación Actual:</label>
+                <select id="areaSeleccionada" onchange="cambiarArea()" class="border-b-2 border-blue-900 p-1 bg-transparent font-bold text-blue-900 focus:outline-none">
+                    <option value="GERENCIA">GERENCIA</option>
+                    <option value="BOVEDA">BÓVEDA</option>
+                    <option value="CONVERSION SERVICE">CONVERSION SERVICE</option>
+                    <option value="TI">TI</option>
+                    <option value="MANTENIMIENTO">MANTENIMIENTO</option>
+                    <option value="BPO SANTANDER">BPO SANTANDER</option>
+                    <option value="BPO CHILE">BPO CHILE</option>
+                    <option value="PICKING">PICKING</option>
+                    <option value="BUSQUEDA">BÚSQUEDA</option>
+                    <option value="INDEXACION">INDEXACIÓN</option>
+                    <option value="PRODUCCION">PRODUCCIÓN</option>
+                    <option value="INGRESOS">INGRESOS</option>
+                    <option value="TRANSPORTE">TRANSPORTE</option>
+                </select>
+            </div>
+        </div>
+ 
+        <div class="overflow-x-auto text-[11px] pt-2">
+            <table class="w-full border-collapse border-2 border-black">
+                <thead class="bg-blue-900 text-white uppercase">
+                    <tr>
+                        <th class="border border-black p-2 w-1/3 text-center">ELEMENTO / INSUMO</th>
+                        <th class="border border-black p-2 w-1/2 text-left">DESCRIPCIÓN Y ESPECIFICACIÓN TÉCNICA</th>
+                        <th class="border border-black p-2 w-24 text-center">ESTADO</th>
+                        <th class="border border-black p-2">COMENTARIOS / OBSERVACIONES</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaInsumosActivos" class="text-gray-800">
+                    </tbody>
+            </table>
+        </div>
+ 
+        <div class="mt-6 flex flex-col sm:flex-row gap-4">
+            <button type="button" onclick="exportarExcelConsolidado()" class="flex-1 bg-green-700 text-white font-bold py-4 rounded hover:bg-green-800 transition tracking-[0.1em] uppercase shadow-lg text-center text-sm">
+                📊 Finalizar y Exportar Consolidado a Excel (.xlsx)
+            </button>
+        </div>
+    </div>
+ 
+    <script>
+        // Definición técnica de los 16 insumos institucionales
+        const estructuraInsumos = [
+            { id: 1, nombre: "Manual de primeros auxilios", desc: "Guía básica o manual de primeros auxilios en formato físico, legible y disponible.", inicial: "OK" },
+            { id: 2, nombre: "Alfileres de gancho", desc: "Set de alfileres de seguridad mecánicos para fijación de vendajes.", inicial: "X" },
+            { id: 3, nombre: "Bandeja de riñón", desc: "Bandeja plástica o de acero inoxidable con forma de riñón para recolección.", inicial: "X" },
+            { id: 4, nombre: "Tijeras", desc: "Tijera de trauma o de material resistente apta para cortar de forma segura.", inicial: "OK" },
+            { id: 5, nombre: "Apósitos adhesivos (1x3 in)", desc: "Bandas adhesivas (parches curitas) de 2.5 x 7.5 cm envasadas individualmente.", inicial: "OK" },
+            { id: 6, nombre: "Cinta adhesiva en rollo (1 in)", desc: "Cinta médica micropore o esparadrapo de 2.5 cm de ancho.", inicial: "OK" },
+            { id: 7, nombre: "Compresas de gasa estéril (3x3 in)", desc: "Gasas estériles individuales de 7.5 x 7.5 cm para limpieza y cobertura.", inicial: "OK" },
+            { id: 8, nombre: "Vendas de gasa en rollo (1 in)", desc: "Rollos de venda ligeros de 2.5 cm de ancho para retención mecánica.", inicial: "OK" },
+            { id: 9, nombre: "Vendas de gasa en rollo (2 in)", desc: "Rollos de gasa estándar de 5 cm de ancho para cobertura intermedia.", inicial: "OK" },
+            { id: 10, nombre: "Vendas de gasa en rollo (4 in)", desc: "Rollos de gasa anchos de 10 cm para contención y sujeción.", inicial: "OK" },
+            { id: 11, nombre: "Apósitos absorbentes (4x4 in)", desc: "Apósitos de 10 x 10 cm de alta absorción o vendajes de compresión.", inicial: "OK" },
+            { id: 12, nombre: "Vendaje triangular", desc: "Paño triangular multiuso en tela resistente para improvisar cabestrillos.", inicial: "X" },
+            { id: 13, nombre: "Almohadillado para férula", desc: "Material de amortiguación o algodón protector acolchado previo a inmovilizar.", inicial: "X" },
+            { id: 14, nombre: "Férulas (Varios tamaños)", desc: "Conjunto estructurado de férulas de inmovilización médica maleables.", inicial: "X" },
+            { id: 15, nombre: "Toallitas o spray antiséptico", desc: "Solución de limpieza cutánea en formato de toallitas individuales o spray.", inicial: "OK" },
+            { id: 16, nombre: "Guantes de examen médico (caja)", desc: "Caja de guantes desechables de nitrilo o látex para protección biológica.", inicial: "OK" }
+        ];
+
+        // Lista de las 13 áreas del recinto
+        const areasRecinto = [
+            "GERENCIA", "BOVEDA", "CONVERSION SERVICE", "TI", "MANTENIMIENTO", 
+            "BPO SANTANDER", "BPO CHILE", "PICKING", "BUSQUEDA", "INDEXACION", 
+            "PRODUCCION", "INGRESOS", "TRANSPORTE"
+        ];
+
+        // Base de datos temporal en memoria viva del navegador
+        let baseDatosInspeccion = {};
+
+        // Inicializar la estructura con los datos por defecto del PDF de mayo
+        function inicializarBaseDatos() {
+            document.getElementById('fecha').valueAsDate = new Date();
+            
+            areasRecinto.forEach(area => {
+                baseDatosInspeccion[area] = {};
+                estructuraInsumos.forEach(insumo => {
+                    baseDatosInspeccion[area][`item_${insumo.id}_st`] = insumo.inicial;
+                    baseDatosInspeccion[area][`item_${insumo.id}_ob`] = insumo.inicial === "X" ? "Faltante según levantamiento mensual" : "";
+                });
+            });
+        }
+
+        // Renderizar la tabla interactiva según el área seleccionada
+        function renderizarTabla() {
+            const areaActual = document.getElementById("areaSeleccionada").value;
+            const tbody = document.getElementById("tablaInsumosActivos");
+            tbody.innerHTML = "";
+
+            estructuraInsumos.forEach(insumo => {
+                const estadoGuardado = baseDatosInspeccion[areaActual][`item_${insumo.id}_st`];
+                const observacionGuardada = baseDatosInspeccion[areaActual][`item_${insumo.id}_ob`];
+
+                const fila = document.createElement("tr");
+                fila.innerHTML = `
+                    <td class="border border-black p-2 font-bold bg-gray-50 text-center">${insumo.nombre}</td>
+                    <td class="border border-black p-2 italic text-gray-600">${insumo.desc}</td>
+                    <td class="border border-black p-2 text-center text-xl">
+                        <select onchange="guardarCambioEnCaliente(${insumo.id}, 'st', this.value)" class="w-full bg-white text-center cursor-pointer font-bold focus:bg-yellow-50">
+                            <option value="OK" ${estadoGuardado === 'OK' ? 'selected' : ''}>✔️ OK</option>
+                            <option value="X" ${estadoGuardado === 'X' ? 'selected' : ''}>✖️ X</option>
+                            <option value="N/A" ${estadoGuardado === 'N/A' ? 'selected' : ''}>N/A</option>
+                        </select>
+                    </td>
+                    <td class="border border-black p-1">
+                        <input type="text" value="${observacionGuardada}" onchange="guardarCambioEnCaliente(${insumo.id}, 'ob', this.value)" class="w-full outline-none px-1 bg-transparent focus:bg-yellow-50" placeholder="Nota...">
+                    </td>
+                `;
+                tbody.appendChild(fila);
+            });
+        }
+
+        // Guarda inmediatamente cualquier cambio que hagas en los selects o inputs
+        function guardarCambioEnCaliente(insumoId, tipo, valor) {
+            const areaActual = document.getElementById("areaSeleccionada").value;
+            baseDatosInspeccion[areaActual][`item_${insumoId}_${tipo}`] = valor;
+        }
+
+        // Cambiar de área sin perder la información de las otras
+        function cambiarArea() {
+            renderizarTabla();
+        }
+
+        // Función Principal: Recopila la memoria viva y la convierte a un único Excel ordenado
+        function exportarExcelConsolidado() {
+            const inspector = document.getElementById('inspector').value;
+            const fecha = document.getElementById('fecha').value;
+
+            // 1. Crear el arreglo de datos para las filas del Excel
+            let filasExcel = [];
+
+            areasRecinto.forEach(area => {
+                // Objeto estructurado para cada fila (Área)
+                let registroArea = {
+                    "ÁREA / DEPARTAMENTO": area,
+                    "SUPERVISOR": inspector,
+                    "FECHA INSPECCIÓN": fecha
+                };
+
+                // Añadir cada uno de los 16 insumos como columnas de datos directos
+                estructuraInsumos.forEach(insumo => {
+                    const est = baseDatosInspeccion[area][`item_${insumo.id}_st`];
+                    const obs = baseDatosInspeccion[area][`item_${insumo.id}_ob`];
+                    
+                    // Columna de Estado del Insumo
+                    registroArea[`${insumo.nombre} (ESTADO)`] = est;
+                    // Columna de Observación del Insumo
+                    registroArea[`${insumo.nombre} (OBSERVACIONES)`] = obs ? obs : "Sin novedades";
+                });
+
+                filasExcel.push(registroArea);
+            });
+
+            // 2. Procesamiento y generación del Libro mediante SheetJS
+            const libroTrabajo = XLSX.utils.book_new();
+            const hojaTrabajo = XLSX.utils.json_to_sheet(filasExcel);
+
+            // Ajustar automáticamente el ancho de las columnas para que el Excel sea legible
+            const anchosColumnas = [
+                { wch: 25 }, // Área
+                { wch: 20 }, // Supervisor
+                { wch: 18 }, // Fecha
+                // Patrón repetitivo para los 16 elementos (Estado y Obs)
+                ...Array(16).fill([{ wch: 28 }, { wch: 35 }]).flat()
+            ];
+            hojaTrabajo['!cols'] = anchosColumnas;
+
+            // Adjuntar hoja al libro
+            XLSX.utils.book_append_sheet(libroTrabajo, hojaTrabajo, "Consolidado Botiquines");
+
+            // 3. Descarga del archivo con nombre dinámico estandarizado
+            XLSX.writeFile(libroTrabajo, `CONSOLIDADO_INSPECCION_BOTIQUINES_${fecha}.xlsx`);
+        }
+
+        // Ejecución al iniciar la PWA
+        window.onload = function() {
+            inicializarBaseDatos();
+            renderizarTabla();
+        };
+    </script>
+</body>
+</html>
