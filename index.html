@@ -9,8 +9,8 @@
     <!-- Librería html2pdf.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        /* Reglas críticas para evitar cortes de filas y desbordes */
-        .fila-insumo {
+        /* Estilos de control de impresión nativos */
+        .fila-insumo, tr {
             page-break-inside: avoid !important;
             break-inside: avoid !important;
         }
@@ -18,29 +18,26 @@
             page-break-inside: avoid !important;
             break-inside: avoid !important;
         }
-        /* Ajuste fino de bordes en la exportación */
-        table {
-            border-collapse: collapse !important;
-        }
     </style>
 </head>
 <body class="bg-gray-100 py-6 px-4">
  
-    <!-- Formulario en Pantalla (Mantiene los controles interactivos) -->
+    <!-- Formulario en Pantalla Interactivo -->
     <div id="formulario-pantalla" class="max-w-5xl mx-auto bg-white p-6 rounded shadow-lg border border-gray-300">
+        
         <!-- Encabezado corporativo -->
-        <div class="flex justify-between items-center border-b-2 border-black pb-4 mb-6">
+        <div class="flex justify-between items-center border-b-2 border-black pb-4 mb-6 header-pdf">
             <div class="w-2/3">
                 <h1 class="text-lg font-bold uppercase text-gray-800 tracking-tight">REGISTRO DE INSPECCIÓN MENSUAL AL SISTEMA DE SEGURIDAD OPERACIONAL</h1>
                 <p class="text-sm font-semibold text-blue-900 mt-1 uppercase">Sistema de Registro Local - ACCESS</p>
             </div>
             <div class="w-1/3 flex justify-end items-center">
-                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRF48GAfBiNyZh2fPJF-l8q0Dk1Dqn5tQ2r4g&s" alt="Logo ACCESS" class="h-16 object-contain">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRF48GAfBiNyZh2fPJF-l8q0Dk1Dqn5tQ2r4g&s" alt="Logo ACCESS" class="h-16 object-contain logo-pdf">
             </div>
         </div>
 
         <!-- Bloque de Control e Identificación -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 bg-gray-50 p-4 border border-gray-200 rounded">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 bg-gray-50 p-4 border border-gray-200 rounded info-pdf">
             <div class="flex flex-col">
                 <label class="text-xs font-bold uppercase text-gray-500">Supervisor Responsable:</label>
                 <select id="inspector" class="border-b-2 border-blue-900 p-1 bg-transparent font-bold text-blue-900 focus:outline-none">
@@ -87,8 +84,8 @@
         </div>
  
         <!-- Tabla de Inspección Activa -->
-        <div class="overflow-x-auto text-[11px] pt-2">
-            <table class="w-full border-collapse border-2 border-black">
+        <div class="overflow-x-auto text-[11px] pt-2 table-container-pdf">
+            <table class="w-full border-collapse border-2 border-black table-pdf">
                 <thead class="bg-blue-900 text-white uppercase">
                     <tr>
                         <th class="border border-black p-2 w-1/3 text-center">ELEMENTO / INSUMO</th>
@@ -103,29 +100,11 @@
             </table>
         </div>
 
-        <!-- Panel de Acciones -->
-        <div class="mt-6">
-            <button type="button" onclick="generarPDFImpecable()" class="w-full bg-red-700 text-white font-bold py-4 rounded hover:bg-red-800 transition tracking-[0.1em] uppercase shadow-lg text-sm flex items-center justify-center gap-2">
-                📄 Generar Reporte en PDF Sin Cortes
+        <!-- Panel de Acciones Interactivas (Se auto-elimina en el PDF) -->
+        <div id="panel-acciones" class="mt-6">
+            <button type="button" onclick="generarPDFFix()" class="w-full bg-red-700 text-white font-bold py-4 rounded hover:bg-red-800 transition tracking-[0.1em] uppercase shadow-lg text-sm flex items-center justify-center gap-2">
+                📄 Generar Reporte Completo en PDF
             </button>
-        </div>
-    </div>
-
-    <!-- CONTENEDOR OCULTO: Solo se usa como plantilla estructurada para compilar el PDF -->
-    <div id="plantilla-pdf" class="hidden">
-        <div style="width: 794px; font-family: sans-serif; padding: 20px; background-color: white;">
-            <!-- El script inyectará aquí la versión limpia y plana sin inputs machacados -->
-            <div id="espejo-contenido"></div>
-            
-            <!-- Firmas fijadas al final del documento -->
-            <div class="mt-16 grid grid-cols-2 gap-12 text-center text-xs uppercase font-bold bloque-firmas" style="border-top: 1px solid #e5e7eb; padding-top: 20px;">
-                <div>
-                    <div style="border-top: 1px solid black; width: 200px; margin: 20px auto 0 auto; padding-top: 5px;">Firma Supervisor</div>
-                </div>
-                <div>
-                    <div style="border-top: 1px solid black; width: 200px; margin: 20px auto 0 auto; padding-top: 5px;">Firma Jefatura / Operaciones</div>
-                </div>
-            </div>
         </div>
     </div>
  
@@ -174,7 +153,7 @@
             });
         }
 
-        function generarPDFImpecable() {
+        function generarPDFFix() {
             const supervisor = document.getElementById('inspector').value;
             const area = document.getElementById('areaSeleccionada').value;
             const fecha = document.getElementById('fecha').value;
@@ -183,76 +162,73 @@
             if(!area) { alert("Por favor, seleccione el Área a Evaluar."); return; }
             if(!fecha) { alert("Por favor, ingrese la Fecha de inspección."); return; }
 
-            // 1. Generamos el HTML plano optimizado para el motor de pdf
-            let tablaPlanaHTML = '';
-            const filas = document.querySelectorAll('#tablaInsumosActivos tr');
-            
-            filas.forEach(fila => {
-                const nombre = fila.querySelector('.col-nombre').innerText;
-                const desc = fila.querySelector('.col-desc').innerText;
-                const estado = fila.querySelector('.select-estado').value;
-                const observacion = fila.querySelector('.input-obs').value;
+            // 1. Clonamos de manera limpia el contenedor principal de la pantalla
+            const elementoOriginal = document.getElementById('formulario-pantalla');
+            const clon = elementoOriginal.cloneNode(true);
 
-                tablaPlanaHTML += `
-                    <tr class="fila-insumo" style="border: 1px solid black;">
-                        <td style="border: 1px solid black; padding: 6px; font-weight: bold; background-color: #f9fafb; text-align: center; width: 30%; font-size: 11px;">${nombre}</td>
-                        <td style="border: 1px solid black; padding: 6px; font-style: italic; color: #4b5563; width: 40%; font-size: 11px;">${desc}</td>
-                        <td style="border: 1px solid black; padding: 6px; text-align: center; font-size: 14px; font-weight: bold; width: 10%;">${estado}</td>
-                        <td style="border: 1px solid black; padding: 6px; font-size: 11px; color: #111827; width: 20%;">${observacion}</td>
-                    </tr>
-                `;
+            // Remover botones de control para que no se impriman en el clon
+            const botonera = clon.querySelector('#panel-acciones');
+            if(botonera) botonera.remove();
+
+            // 2. Reemplazar dinámicamente inputs por elementos de texto estables para el PDF
+            const selectoresClonados = clon.querySelectorAll('.select-estado');
+            const inputsClonados = clon.querySelectorAll('.input-obs');
+
+            selectoresClonados.forEach((select, index) => {
+                const originalSelect = elementoOriginal.querySelectorAll('.select-estado')[index];
+                const celdaContenedora = select.parentElement;
+                celdaContenedora.innerHTML = `<span style="font-size:14px; font-weight:bold;">${originalSelect.value}</span>`;
             });
 
-            // 2. Armamos la maqueta idéntica pero optimizada
-            const contenedorEspejo = document.getElementById('espejo-contenido');
-            contenedorEspejo.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid black; padding-bottom: 10px; margin-bottom: 15px;">
-                    <div style="width: 70%;">
-                        <h1 style="font-size: 14px; font-weight: bold; margin: 0; text-transform: uppercase;">REGISTRO DE INSPECCIÓN MENSUAL AL SISTEMA DE SEGURIDAD OPERACIONAL</h1>
-                        <p style="font-size: 11px; font-weight: bold; color: #1e3a8a; margin: 3px 0 0 0; text-transform: uppercase;">Reporte de Inspección Oficial - ACCESS</p>
-                    </div>
-                    <div style="width: 30%; text-align: right;">
-                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRF48GAfBiNyZh2fPJF-l8q0Dk1Dqn5tQ2r4g&s" style="height: 50px; display: inline-block; object-contain: fill;">
-                    </div>
-                </div>
+            inputsClonados.forEach((input, index) => {
+                const originalInput = elementoOriginal.querySelectorAll('.input-obs')[index];
+                const celdaContenedora = input.parentElement;
+                const textoFinal = originalInput.value.trim();
+                celdaContenedora.innerHTML = `<span style="font-size:11px; padding-left:4px;">${textoFinal}</span>`;
+            });
 
-                <div style="display: grid; grid-template-cols: 1fr 1fr 1fr; border: 1px solid #e5e7eb; background-color: #f9fafb; padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 11px;">
-                    <div style="float: left; width: 33%;"><strong>SUPERVISOR:</strong><br><span style="color:#1e3a8a; font-weight: bold;">${supervisor}</span></div>
-                    <div style="float: left; width: 33%;"><strong>FECHA:</strong><br><span style="font-weight: bold;">${fecha}</span></div>
-                    <div style="float: left; width: 34%;"><strong>ÁREA EVALUADA:</strong><br><span style="color:#1e3a8a; font-weight: bold;">${area}</span></div>
-                    <div style="clear: both;"></div>
-                </div>
+            // Reemplazar inputs superiores (Supervisor, Fecha, Área) por etiquetas limpias
+            const selectSupervisor = clon.querySelector('#inspector');
+            if(selectSupervisor) selectSupervisor.parentElement.innerHTML = `<label class="text-xs font-bold uppercase text-gray-500">Supervisor Responsable:</label><div class="font-bold text-blue-900 border-b border-gray-300 py-1">${supervisor}</div>`;
+            
+            const inputFecha = clon.querySelector('#fecha');
+            if(inputFecha) inputFecha.parentElement.innerHTML = `<label class="text-xs font-bold uppercase text-gray-500">Fecha de inspección:</label><div class="font-bold border-b border-gray-300 py-1">${fecha}</div>`;
+            
+            const selectArea = clon.querySelector('#areaSeleccionada');
+            if(selectArea) selectArea.parentElement.innerHTML = `<label class="text-xs font-bold uppercase text-gray-600 bg-blue-100 px-2 py-0.5 rounded self-start mb-1">Área a Evaluar Actual:</label><div class="font-bold text-blue-900 border-b border-gray-300 py-1">${area}</div>`;
 
-                <table style="width: 100%; border: 2px solid black; border-collapse: collapse;">
-                    <thead>
-                        <tr style="background-color: #1e3a8a; color: white; text-transform: uppercase; font-size: 11px;">
-                            <th style="border: 1px solid black; padding: 6px;">ELEMENTO / INSUMO</th>
-                            <th style="border: 1px solid black; padding: 6px; text-align: left;">DESCRIPCIÓN TÉCNICA</th>
-                            <th style="border: 1px solid black; padding: 6px;">ESTADO</th>
-                            <th style="border: 1px solid black; padding: 6px; text-align: left;">OBSERVACIONES</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${tablaPlanaHTML}
-                    </tbody>
-                </table>
+            // 3. Añadir de manera limpia la sección de firmas al final del clon
+            const bloqueFirmas = document.createElement('div');
+            bloqueFirmas.className = "mt-16 grid grid-cols-2 gap-12 text-center text-xs uppercase font-bold bloque-firmas";
+            bloqueFirmas.style.borderTop = "1px solid #e5e7eb";
+            bloqueFirmas.style.paddingTop = "24px";
+            bloqueFirmas.innerHTML = `
+                <div><div style="border-top: 1px solid black; width: 180px; margin: 10px auto 0 auto; padding-top: 4px;">Firma Supervisor</div></div>
+                <div><div style="border-top: 1px solid black; width: 180px; margin: 10px auto 0 auto; padding-top: 4px;">Firma Jefatura / Operaciones</div></div>
             `;
+            clon.appendChild(bloqueFirmas);
 
-            // 3. Pasamos la maqueta limpia al renderizador
-            const objetivo = document.getElementById('plantilla-pdf');
-            objetivo.classList.remove('hidden'); // Lo activamos un milisegundo para la captura
+            // Ajustar estilos del clon para calzar $1:1$ con tamaño Carta
+            clon.style.width = "790px"; 
+            clon.style.boxShadow = "none";
+            clon.style.border = "none";
 
+            // 4. Parámetros de html2pdf enfocados en evitar recortes
             const opciones = {
-                margin:       [0.4, 0.4, 0.4, 0.4],
-                filename:     `INSPECCION_BOTIQUIN_${area}_${fecha}.pdf`,
+                margin:       [0.4, 0.4, 0.4, 0.4], // Márgenes arriba, abajo, lados
+                filename:     `INSPECCION_${area}_${fecha}.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, logging: false },
+                html2canvas:  { 
+                    scale: 2, 
+                    useCORS: true, 
+                    logging: false,
+                    windowWidth: 1024 // Forzar renderizado completo de la tabla antes de convertir
+                },
                 jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
             };
 
-            html2pdf().set(opciones).from(objetivo).save().then(() => {
-                objetivo.classList.add('hidden'); // Se vuelve a ocultar inmediatamente tras descargar
-            });
+            // Ejecuta directo desde el objeto clon en memoria
+            html2pdf().set(opciones).from(clon).save();
         }
 
         window.onload = function() {
