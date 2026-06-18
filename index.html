@@ -3,34 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro Inspección Mensual - ACCESS (Generador PDF Fix)</title>
+    <title>Registro Inspección Mensual - ACCESS (PDF Perfecto)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Librería moderna para generar PDF directamente desde el HTML -->
+    <!-- Librería html2pdf.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        /* Estilos específicos para evitar cortes extraños en la impresión */
-        .prevent-split {
+        /* Reglas críticas para evitar cortes de filas y desbordes */
+        .fila-insumo {
             page-break-inside: avoid !important;
             break-inside: avoid !important;
         }
-        tr {
+        .bloque-firmas {
             page-break-inside: avoid !important;
             break-inside: avoid !important;
         }
-        /* Ajuste de escala base para PDFs */
-        @media print {
-            body {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
+        /* Ajuste fino de bordes en la exportación */
+        table {
+            border-collapse: collapse !important;
         }
     </style>
 </head>
 <body class="bg-gray-100 py-6 px-4">
  
-    <!-- Contenedor que capturará el PDF -->
-    <div id="contenido-pdf" class="w-[1024px] mx-auto bg-white p-8 rounded shadow-lg border border-gray-300">
+    <!-- Formulario en Pantalla (Mantiene los controles interactivos) -->
+    <div id="formulario-pantalla" class="max-w-5xl mx-auto bg-white p-6 rounded shadow-lg border border-gray-300">
         <!-- Encabezado corporativo -->
         <div class="flex justify-between items-center border-b-2 border-black pb-4 mb-6">
             <div class="w-2/3">
@@ -43,7 +40,7 @@
         </div>
 
         <!-- Bloque de Control e Identificación -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 bg-gray-50 p-4 border border-gray-200 rounded prevent-split">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 bg-gray-50 p-4 border border-gray-200 rounded">
             <div class="flex flex-col">
                 <label class="text-xs font-bold uppercase text-gray-500">Supervisor Responsable:</label>
                 <select id="inspector" class="border-b-2 border-blue-900 p-1 bg-transparent font-bold text-blue-900 focus:outline-none">
@@ -106,22 +103,30 @@
             </table>
         </div>
 
-        <!-- Sección de Firmas para cierre formal en el PDF -->
-        <div class="mt-12 grid grid-cols-2 gap-12 pt-8 text-center text-xs border-t border-gray-200 uppercase font-bold prevent-split">
-            <div>
-                <div class="border-t border-black w-48 mx-auto mt-4 pt-1">Firma Supervisor</div>
-            </div>
-            <div>
-                <div class="border-t border-black w-48 mx-auto mt-4 pt-1">Firma Jefatura / Operaciones</div>
-            </div>
+        <!-- Panel de Acciones -->
+        <div class="mt-6">
+            <button type="button" onclick="generarPDFImpecable()" class="w-full bg-red-700 text-white font-bold py-4 rounded hover:bg-red-800 transition tracking-[0.1em] uppercase shadow-lg text-sm flex items-center justify-center gap-2">
+                📄 Generar Reporte en PDF Sin Cortes
+            </button>
         </div>
     </div>
- 
-    <!-- Panel de Acciones (Fuera del contenedor del PDF) -->
-    <div class="max-w-5xl mx-auto mt-6 px-4 md:px-0">
-        <button type="button" onclick="generarPDF()" class="w-full bg-red-700 text-white font-bold py-4 rounded hover:bg-red-800 transition tracking-[0.1em] uppercase shadow-lg text-sm flex items-center justify-center gap-2">
-            📄 Generar Reporte en PDF Perfect-Fit
-        </button>
+
+    <!-- CONTENEDOR OCULTO: Solo se usa como plantilla estructurada para compilar el PDF -->
+    <div id="plantilla-pdf" class="hidden">
+        <div style="width: 794px; font-family: sans-serif; padding: 20px; background-color: white;">
+            <!-- El script inyectará aquí la versión limpia y plana sin inputs machacados -->
+            <div id="espejo-contenido"></div>
+            
+            <!-- Firmas fijadas al final del documento -->
+            <div class="mt-16 grid grid-cols-2 gap-12 text-center text-xs uppercase font-bold bloque-firmas" style="border-top: 1px solid #e5e7eb; padding-top: 20px;">
+                <div>
+                    <div style="border-top: 1px solid black; width: 200px; margin: 20px auto 0 auto; padding-top: 5px;">Firma Supervisor</div>
+                </div>
+                <div>
+                    <div style="border-top: 1px solid black; width: 200px; margin: 20px auto 0 auto; padding-top: 5px;">Firma Jefatura / Operaciones</div>
+                </div>
+            </div>
+        </div>
     </div>
  
     <script>
@@ -134,7 +139,7 @@
             { id: 6, nombre: "Cinta adhesiva en rollo (1 in)", desc: "Cinta médica micropore o esparadrapo de 2.5 cm de ancho.", inicial: "✔️" },
             { id: 7, nombre: "Compresas de gasa estéril (3x3 in)", desc: "Gasas estériles individuales de 7.5 x 7.5 cm para limpieza y cobertura.", inicial: "✔️" },
             { id: 8, nombre: "Vendas de gasa en rollo (1 in)", desc: "Rollos de venda ligeros de 2.5 cm de ancho para retención mecánica.", inicial: "✔️" },
-            { id: 9, font: "Vendas de gasa en rollo (2 in)", nombre: "Vendas de gasa en rollo (2 in)", desc: "Rollos de gasa estándar de 5 cm de ancho para cobertura intermedia.", inicial: "✔️" },
+            { id: 9, nombre: "Vendas de gasa en rollo (2 in)", desc: "Rollos de gasa estándar de 5 cm de ancho para cobertura intermedia.", inicial: "✔️" },
             { id: 10, nombre: "Vendas de gasa en rollo (4 in)", desc: "Rollos de gasa anchos de 10 cm para contención y sujeción.", inicial: "✔️" },
             { id: 11, nombre: "Apósitos absorbentes (4x4 in)", desc: "Apósitos de 10 x 10 cm de alta absorción o vendajes de compresión.", inicial: "✔️" },
             { id: 12, nombre: "Vendaje triangular", desc: "Paño triangular multiuso en tela resistente para improvisar cabestrillos.", inicial: "✖️" },
@@ -150,25 +155,26 @@
 
             estructuraInsumos.forEach(insumo => {
                 const fila = document.createElement("tr");
+                fila.className = "fila-insumo";
                 fila.innerHTML = `
-                    <td class="border border-black p-2 font-bold bg-gray-50 text-center">${insumo.nombre}</td>
-                    <td class="border border-black p-2 italic text-gray-600">${insumo.desc}</td>
-                    <td class="border border-black p-2 text-center text-xl data-print-select">
-                        <select class="w-full bg-white text-center cursor-pointer font-bold focus:outline-none">
+                    <td class="border border-black p-2 font-bold bg-gray-50 text-center col-nombre">${insumo.nombre}</td>
+                    <td class="border border-black p-2 italic text-gray-600 col-desc">${insumo.desc}</td>
+                    <td class="border border-black p-2 text-center text-xl col-estado">
+                        <select class="w-full bg-white text-center cursor-pointer font-bold focus:outline-none select-estado">
                             <option value="✔️" ${insumo.inicial === '✔️' ? 'selected' : ''}>✔️</option>
                             <option value="✖️" ${insumo.inicial === '✖️' ? 'selected' : ''}>✖️</option>
                             <option value="N/A" ${insumo.inicial === 'N/A' ? 'selected' : ''}>N/A</option>
                         </select>
                     </td>
-                    <td class="border border-black p-1 data-print-input">
-                        <input type="text" value="${insumo.inicial === '✖️' ? 'Faltante según levantamiento' : ''}" class="w-full outline-none px-1 bg-transparent focus:bg-blue-50" placeholder="Nota...">
+                    <td class="border border-black p-1 col-obs">
+                        <input type="text" value="${insumo.inicial === '✖️' ? 'Faltante según levantamiento' : ''}" class="w-full outline-none px-1 bg-transparent input-obs" placeholder="Nota...">
                     </td>
                 `;
                 tbody.appendChild(fila);
             });
         }
 
-        function generarPDF() {
+        function generarPDFImpecable() {
             const supervisor = document.getElementById('inspector').value;
             const area = document.getElementById('areaSeleccionada').value;
             const fecha = document.getElementById('fecha').value;
@@ -177,35 +183,76 @@
             if(!area) { alert("Por favor, seleccione el Área a Evaluar."); return; }
             if(!fecha) { alert("Por favor, ingrese la Fecha de inspección."); return; }
 
-            // Truco de renderizado: Convertimos temporalmente inputs y selects a texto plano para que salgan perfectos en el PDF
-            const filasSelect = document.querySelectorAll('#tablaInsumosActivos tr');
-            filasSelect.forEach(fila => {
-                const select = fila.querySelector('.data-print-select select');
-                const input = fila.querySelector('.data-print-input input');
-                
-                // Guardamos los valores reales elegidos por el usuario
-                if(select) select.setAttribute('data-valor', select.value);
-                if(input) input.setAttribute('data-valor', input.value);
+            // 1. Generamos el HTML plano optimizado para el motor de pdf
+            let tablaPlanaHTML = '';
+            const filas = document.querySelectorAll('#tablaInsumosActivos tr');
+            
+            filas.forEach(fila => {
+                const nombre = fila.querySelector('.col-nombre').innerText;
+                const desc = fila.querySelector('.col-desc').innerText;
+                const estado = fila.querySelector('.select-estado').value;
+                const observacion = fila.querySelector('.input-obs').value;
+
+                tablaPlanaHTML += `
+                    <tr class="fila-insumo" style="border: 1px solid black;">
+                        <td style="border: 1px solid black; padding: 6px; font-weight: bold; background-color: #f9fafb; text-align: center; width: 30%; font-size: 11px;">${nombre}</td>
+                        <td style="border: 1px solid black; padding: 6px; font-style: italic; color: #4b5563; width: 40%; font-size: 11px;">${desc}</td>
+                        <td style="border: 1px solid black; padding: 6px; text-align: center; font-size: 14px; font-weight: bold; width: 10%;">${estado}</td>
+                        <td style="border: 1px solid black; padding: 6px; font-size: 11px; color: #111827; width: 20%;">${observacion}</td>
+                    </tr>
+                `;
             });
 
-            const elemento = document.getElementById('contenido-pdf');
-            
-            // Opciones avanzadas de compresión y márgenes para evitar saltos horizontales descordinados
+            // 2. Armamos la maqueta idéntica pero optimizada
+            const contenedorEspejo = document.getElementById('espejo-contenido');
+            contenedorEspejo.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid black; padding-bottom: 10px; margin-bottom: 15px;">
+                    <div style="width: 70%;">
+                        <h1 style="font-size: 14px; font-weight: bold; margin: 0; text-transform: uppercase;">REGISTRO DE INSPECCIÓN MENSUAL AL SISTEMA DE SEGURIDAD OPERACIONAL</h1>
+                        <p style="font-size: 11px; font-weight: bold; color: #1e3a8a; margin: 3px 0 0 0; text-transform: uppercase;">Reporte de Inspección Oficial - ACCESS</p>
+                    </div>
+                    <div style="width: 30%; text-align: right;">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRF48GAfBiNyZh2fPJF-l8q0Dk1Dqn5tQ2r4g&s" style="height: 50px; display: inline-block; object-contain: fill;">
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-cols: 1fr 1fr 1fr; border: 1px solid #e5e7eb; background-color: #f9fafb; padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 11px;">
+                    <div style="float: left; width: 33%;"><strong>SUPERVISOR:</strong><br><span style="color:#1e3a8a; font-weight: bold;">${supervisor}</span></div>
+                    <div style="float: left; width: 33%;"><strong>FECHA:</strong><br><span style="font-weight: bold;">${fecha}</span></div>
+                    <div style="float: left; width: 34%;"><strong>ÁREA EVALUADA:</strong><br><span style="color:#1e3a8a; font-weight: bold;">${area}</span></div>
+                    <div style="clear: both;"></div>
+                </div>
+
+                <table style="width: 100%; border: 2px solid black; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background-color: #1e3a8a; color: white; text-transform: uppercase; font-size: 11px;">
+                            <th style="border: 1px solid black; padding: 6px;">ELEMENTO / INSUMO</th>
+                            <th style="border: 1px solid black; padding: 6px; text-align: left;">DESCRIPCIÓN TÉCNICA</th>
+                            <th style="border: 1px solid black; padding: 6px;">ESTADO</th>
+                            <th style="border: 1px solid black; padding: 6px; text-align: left;">OBSERVACIONES</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tablaPlanaHTML}
+                    </tbody>
+                </table>
+            `;
+
+            // 3. Pasamos la maqueta limpia al renderizador
+            const objetivo = document.getElementById('plantilla-pdf');
+            objetivo.classList.remove('hidden'); // Lo activamos un milisegundo para la captura
+
             const opciones = {
-                margin:       [0.5, 0.3, 0.5, 0.3], // Superior, Izquierda, Inferior, Derecha
+                margin:       [0.4, 0.4, 0.4, 0.4],
                 filename:     `INSPECCION_BOTIQUIN_${area}_${fecha}.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { 
-                    scale: 2, 
-                    useCORS: true, 
-                    logging: false,
-                    width: 1024 // Le dice a la cámara que capture exactamente la estructura sin achicar columnas
-                },
+                html2canvas:  { scale: 2, useCORS: true, logging: false },
                 jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
             };
 
-            // Ejecutar html2pdf
-            html2pdf().set(opciones).from(elemento).save();
+            html2pdf().set(opciones).from(objetivo).save().then(() => {
+                objetivo.classList.add('hidden'); // Se vuelve a ocultar inmediatamente tras descargar
+            });
         }
 
         window.onload = function() {
