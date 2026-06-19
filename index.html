@@ -3,18 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro Inspección Mensual - ACCESS (PDF Perfecto)</title>
-    <!-- Tailwind CSS -->
+    <title>Inspección General de Seguridad - ACCESS</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Librería html2pdf.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        /* Estilos de control de impresión nativos */
-        .fila-insumo, tr {
-            page-break-inside: avoid !important;
-            break-inside: avoid !important;
-        }
-        .bloque-firmas {
+        .page-break-avoid, tr {
             page-break-inside: avoid !important;
             break-inside: avoid !important;
         }
@@ -22,22 +15,19 @@
 </head>
 <body class="bg-gray-100 py-6 px-4">
  
-    <!-- Formulario en Pantalla Interactivo -->
     <div id="formulario-pantalla" class="max-w-5xl mx-auto bg-white p-6 rounded shadow-lg border border-gray-300">
         
-        <!-- Encabezado corporativo -->
-        <div class="flex justify-between items-center border-b-2 border-black pb-4 mb-6 header-pdf">
+        <div class="flex justify-between items-center border-b-2 border-black pb-4 mb-6">
             <div class="w-2/3">
                 <h1 class="text-lg font-bold uppercase text-gray-800 tracking-tight">REGISTRO DE INSPECCIÓN MENSUAL AL SISTEMA DE SEGURIDAD OPERACIONAL</h1>
-                <p class="text-sm font-semibold text-blue-900 mt-1 uppercase">Sistema de Registro Local - ACCESS</p>
+                <p class="text-sm font-semibold text-blue-900 mt-1 uppercase">Control de Botiquines, Extintores y DEA - ACCESS</p>
             </div>
             <div class="w-1/3 flex justify-end items-center">
-                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRF48GAfBiNyZh2fPJF-l8q0Dk1Dqn5tQ2r4g&s" alt="Logo ACCESS" class="h-16 object-contain logo-pdf">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRF48GAfBiNyZh2fPJF-l8q0Dk1Dqn5tQ2r4g&s" alt="Logo ACCESS" class="h-16 object-contain">
             </div>
         </div>
 
-        <!-- Bloque de Control e Identificación -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 bg-gray-50 p-4 border border-gray-200 rounded info-pdf">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 bg-gray-50 p-4 border border-gray-200 rounded">
             <div class="flex flex-col">
                 <label class="text-xs font-bold uppercase text-gray-500">Supervisor Responsable:</label>
                 <select id="inspector" class="border-b-2 border-blue-900 p-1 bg-transparent font-bold text-blue-900 focus:outline-none">
@@ -82,159 +72,13 @@
                 </select>
             </div>
         </div>
- 
-        <!-- Tabla de Inspección Activa -->
-        <div class="overflow-x-auto text-[11px] pt-2 table-container-pdf">
-            <table class="w-full border-collapse border-2 border-black table-pdf">
-                <thead class="bg-blue-900 text-white uppercase">
-                    <tr>
-                        <th class="border border-black p-2 w-1/3 text-center">ELEMENTO / INSUMO</th>
-                        <th class="border border-black p-2 w-1/2 text-left">DESCRIPCIÓN Y ESPECIFICACIÓN TÉCNICA</th>
-                        <th class="border border-black p-2 w-24 text-center">ESTADO</th>
-                        <th class="border border-black p-2">COMENTARIOS / OBSERVACIONES</th>
-                    </tr>
-                </thead>
-                <tbody id="tablaInsumosActivos" class="text-gray-800">
-                    <!-- Dinámico -->
-                </tbody>
-            </table>
+
+        <div class="flex border-b border-gray-200 mb-6 font-bold uppercase text-xs">
+            <button onclick="cambiarPestana('botiquin')" id="btn-botiquin" class="py-3 px-6 border-b-2 border-blue-900 text-blue-900 bg-blue-50 rounded-t">1. Botiquín de Primeros Auxilios</button>
+            <button onclick="cambiarPestana('desfibrilador')" id="btn-desfibrilador" class="py-3 px-6 border-b-2 border-transparent text-gray-500 hover:text-blue-900">2. Desfibrilador (DEA)</button>
+            <button onclick="cambiarPestana('extintores')" id="btn-extintores" class="py-3 px-6 border-b-2 border-transparent text-gray-500 hover:text-blue-900">3. Extintores de Incendio</button>
         </div>
-
-        <!-- Panel de Acciones Interactivas (Se auto-elimina en el PDF) -->
-        <div id="panel-acciones" class="mt-6">
-            <button type="button" onclick="generarPDFFix()" class="w-full bg-red-700 text-white font-bold py-4 rounded hover:bg-red-800 transition tracking-[0.1em] uppercase shadow-lg text-sm flex items-center justify-center gap-2">
-                📄 Generar Reporte Completo en PDF
-            </button>
-        </div>
-    </div>
  
-    <script>
-        const estructuraInsumos = [
-            { id: 1, nombre: "Manual de primeros auxilios", desc: "Guía básica o manual de primeros auxilios en formato físico, legible y disponible.", inicial: "✔️" },
-            { id: 2, nombre: "Alfileres de gancho", desc: "Set de alfileres de seguridad mecánicos para fijación de vendajes.", inicial: "✖️" },
-            { id: 3, nombre: "Bandeja de riñón", desc: "Bandeja plástica o de acero inoxidable con forma de riñón para recolección.", inicial: "✖️" },
-            { id: 4, nombre: "Tijeras", desc: "Tijera de trauma o de material resistente apta para cortar de forma segura.", inicial: "✔️" },
-            { id: 5, nombre: "Apósitos adhesivos (1x3 in)", desc: "Bandas adhesivas (parches curitas) de 2.5 x 7.5 cm envasadas individualmente.", inicial: "✔️" },
-            { id: 6, nombre: "Cinta adhesiva en rollo (1 in)", desc: "Cinta médica micropore o esparadrapo de 2.5 cm de ancho.", inicial: "✔️" },
-            { id: 7, nombre: "Compresas de gasa estéril (3x3 in)", desc: "Gasas estériles individuales de 7.5 x 7.5 cm para limpieza y cobertura.", inicial: "✔️" },
-            { id: 8, nombre: "Vendas de gasa en rollo (1 in)", desc: "Rollos de venda ligeros de 2.5 cm de ancho para retención mecánica.", inicial: "✔️" },
-            { id: 9, nombre: "Vendas de gasa en rollo (2 in)", desc: "Rollos de gasa estándar de 5 cm de ancho para cobertura intermedia.", inicial: "✔️" },
-            { id: 10, nombre: "Vendas de gasa en rollo (4 in)", desc: "Rollos de gasa anchos de 10 cm para contención y sujeción.", inicial: "✔️" },
-            { id: 11, nombre: "Apósitos absorbentes (4x4 in)", desc: "Apósitos de 10 x 10 cm de alta absorción o vendajes de compresión.", inicial: "✔️" },
-            { id: 12, nombre: "Vendaje triangular", desc: "Paño triangular multiuso en tela resistente para improvisar cabestrillos.", inicial: "✖️" },
-            { id: 13, nombre: "Almohadillado para férula", desc: "Material de amortiguación o algodón protector acolchado previo a inmovilizar.", inicial: "✖️" },
-            { id: 14, nombre: "Férulas (Varios tamaños)", desc: "Conjunto estructurado de férulas de inmovilización médica maleables.", inicial: "✖️" },
-            { id: 15, nombre: "Toallitas o spray antiséptico", desc: "Solución de limpieza cutánea en formato de toallitas individuales o spray.", inicial: "✔️" },
-            { id: 16, nombre: "Guantes de examen médico (caja)", desc: "Caja de guantes desechables de nitrilo o látex para protección biológica.", inicial: "✔️" }
-        ];
-
-        function renderizarTablaActiva() {
-            const tbody = document.getElementById("tablaInsumosActivos");
-            tbody.innerHTML = "";
-
-            estructuraInsumos.forEach(insumo => {
-                const fila = document.createElement("tr");
-                fila.className = "fila-insumo";
-                fila.innerHTML = `
-                    <td class="border border-black p-2 font-bold bg-gray-50 text-center col-nombre">${insumo.nombre}</td>
-                    <td class="border border-black p-2 italic text-gray-600 col-desc">${insumo.desc}</td>
-                    <td class="border border-black p-2 text-center text-xl col-estado">
-                        <select class="w-full bg-white text-center cursor-pointer font-bold focus:outline-none select-estado">
-                            <option value="✔️" ${insumo.inicial === '✔️' ? 'selected' : ''}>✔️</option>
-                            <option value="✖️" ${insumo.inicial === '✖️' ? 'selected' : ''}>✖️</option>
-                            <option value="N/A" ${insumo.inicial === 'N/A' ? 'selected' : ''}>N/A</option>
-                        </select>
-                    </td>
-                    <td class="border border-black p-1 col-obs">
-                        <input type="text" value="${insumo.inicial === '✖️' ? 'Faltante según levantamiento' : ''}" class="w-full outline-none px-1 bg-transparent input-obs" placeholder="Nota...">
-                    </td>
-                `;
-                tbody.appendChild(fila);
-            });
-        }
-
-        function generarPDFFix() {
-            const supervisor = document.getElementById('inspector').value;
-            const area = document.getElementById('areaSeleccionada').value;
-            const fecha = document.getElementById('fecha').value;
-
-            if(!supervisor) { alert("Por favor, seleccione el Supervisor Responsable."); return; }
-            if(!area) { alert("Por favor, seleccione el Área a Evaluar."); return; }
-            if(!fecha) { alert("Por favor, ingrese la Fecha de inspección."); return; }
-
-            // 1. Clonamos de manera limpia el contenedor principal de la pantalla
-            const elementoOriginal = document.getElementById('formulario-pantalla');
-            const clon = elementoOriginal.cloneNode(true);
-
-            // Remover botones de control para que no se impriman en el clon
-            const botonera = clon.querySelector('#panel-acciones');
-            if(botonera) botonera.remove();
-
-            // 2. Reemplazar dinámicamente inputs por elementos de texto estables para el PDF
-            const selectoresClonados = clon.querySelectorAll('.select-estado');
-            const inputsClonados = clon.querySelectorAll('.input-obs');
-
-            selectoresClonados.forEach((select, index) => {
-                const originalSelect = elementoOriginal.querySelectorAll('.select-estado')[index];
-                const celdaContenedora = select.parentElement;
-                celdaContenedora.innerHTML = `<span style="font-size:14px; font-weight:bold;">${originalSelect.value}</span>`;
-            });
-
-            inputsClonados.forEach((input, index) => {
-                const originalInput = elementoOriginal.querySelectorAll('.input-obs')[index];
-                const celdaContenedora = input.parentElement;
-                const textoFinal = originalInput.value.trim();
-                celdaContenedora.innerHTML = `<span style="font-size:11px; padding-left:4px;">${textoFinal}</span>`;
-            });
-
-            // Reemplazar inputs superiores (Supervisor, Fecha, Área) por etiquetas limpias
-            const selectSupervisor = clon.querySelector('#inspector');
-            if(selectSupervisor) selectSupervisor.parentElement.innerHTML = `<label class="text-xs font-bold uppercase text-gray-500">Supervisor Responsable:</label><div class="font-bold text-blue-900 border-b border-gray-300 py-1">${supervisor}</div>`;
-            
-            const inputFecha = clon.querySelector('#fecha');
-            if(inputFecha) inputFecha.parentElement.innerHTML = `<label class="text-xs font-bold uppercase text-gray-500">Fecha de inspección:</label><div class="font-bold border-b border-gray-300 py-1">${fecha}</div>`;
-            
-            const selectArea = clon.querySelector('#areaSeleccionada');
-            if(selectArea) selectArea.parentElement.innerHTML = `<label class="text-xs font-bold uppercase text-gray-600 bg-blue-100 px-2 py-0.5 rounded self-start mb-1">Área a Evaluar Actual:</label><div class="font-bold text-blue-900 border-b border-gray-300 py-1">${area}</div>`;
-
-            // 3. Añadir de manera limpia la sección de firmas al final del clon
-            const bloqueFirmas = document.createElement('div');
-            bloqueFirmas.className = "mt-16 grid grid-cols-2 gap-12 text-center text-xs uppercase font-bold bloque-firmas";
-            bloqueFirmas.style.borderTop = "1px solid #e5e7eb";
-            bloqueFirmas.style.paddingTop = "24px";
-            bloqueFirmas.innerHTML = `
-                <div><div style="border-top: 1px solid black; width: 180px; margin: 10px auto 0 auto; padding-top: 4px;">Firma Supervisor</div></div>
-                <div><div style="border-top: 1px solid black; width: 180px; margin: 10px auto 0 auto; padding-top: 4px;">Firma Jefatura / Operaciones</div></div>
-            `;
-            clon.appendChild(bloqueFirmas);
-
-            // Ajustar estilos del clon para calzar $1:1$ con tamaño Carta
-            clon.style.width = "790px"; 
-            clon.style.boxShadow = "none";
-            clon.style.border = "none";
-
-            // 4. Parámetros de html2pdf enfocados en evitar recortes
-            const opciones = {
-                margin:       [0.4, 0.4, 0.4, 0.4], // Márgenes arriba, abajo, lados
-                filename:     `INSPECCION_${area}_${fecha}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { 
-                    scale: 2, 
-                    useCORS: true, 
-                    logging: false,
-                    windowWidth: 1024 // Forzar renderizado completo de la tabla antes de convertir
-                },
-                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
-            };
-
-            // Ejecuta directo desde el objeto clon en memoria
-            html2pdf().set(opciones).from(clon).save();
-        }
-
-        window.onload = function() {
-            document.getElementById('fecha').valueAsDate = new Date();
-            renderizarTablaActiva();
-        };
-    </script>
-</body>
-</html>
+        <div class="overflow-x-auto text-[11px] pt-2">
+            <table class="w-full border-collapse border-2 border-black">
+                <thead class="bg-blue-900
