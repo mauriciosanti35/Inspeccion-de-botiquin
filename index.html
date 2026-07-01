@@ -141,11 +141,11 @@
             { id: 9, nombre: "Vendas de gasa en rollo (2 in)", desc: "Rollos de gasa estándar de 5 cm de ancho para cobertura intermedia.", inicial: "✔️" },
             { id: 10, nombre: "Vendas de gasa en rollo (4 in)", desc: "Rollos de gasa anchos de 10 cm para contención y sujeción.", inicial: "✔️" },
             { id: 11, nombre: "Apósitos absorbentes (4x4 in)", desc: "Apósitos de 10 x 10 cm de alta absorción o vendajes de compresión.", inicial: "✔️" },
-            { id: 12, nombre: "Vendaje triangular", desc: "Paño triangular multiuso en tela resistente para improvisar cabestrillos.", inicial: "✖️" },
+            { id: 12, fontStyle: "", nombre: "Vendaje triangular", desc: "Paño triangular multiuso en tela resistente para improvisar cabestrillos.", inicial: "✖️" },
             { id: 13, nombre: "Almohadillado para férula", desc: "Material de amortiguación o algodón protector acolchado previo a inmovilizar.", inicial: "✖️" },
             { id: 14, nombre: "Férulas (Varios tamaños)", desc: "Conjunto estructurado de férulas de inmovilización médica maleables.", inicial: "✖️" },
             { id: 15, nombre: "Toallitas o spray antiséptico", desc: "Solución de limpieza cutánea en formato de toallitas individuales o spray.", inicial: "✔️" },
-            { id: 16, fontStyle: "", nombre: "Guantes de examen médico (caja)", desc: "Caja de guantes desechables de nitrilo o látex para protección biológica.", inicial: "✔️" }
+            { id: 16, nombre: "Guantes de examen médico (caja)", desc: "Caja de guantes desechables de nitrilo o látex para protección biológica.", inicial: "✔️" }
         ];
 
         function renderizarTablaActiva() {
@@ -182,9 +182,11 @@
                 return;
             }
 
-            // Cambiar el título del documento temporalmente para que el PDF se guarde con el nombre correcto por defecto
+            // Guardamos el título original
             const tituloOriginal = document.title;
-            document.title = `INSPECCION_${area}_${fecha}`;
+            
+            // Asignamos el título exacto que solicitas para el PDF
+            document.title = "Inspeccion de Botiquin-Desfibrilador y Extintores";
 
             // Llama a la ventana nativa del sistema operativo
             window.print();
